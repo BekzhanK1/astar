@@ -6396,7 +6396,10 @@ textarea.form-control-lg {
   margin-bottom: 0.5rem !important; }
 
 .mb-3 {
-  margin-bottom: 1rem !important; }
+  margin-bottom: 1rem !important; 
+  text-align: left !important;
+  display: block;
+}
 
 .mb-4 {
   margin-bottom: 1.875rem !important; }
@@ -8986,7 +8989,10 @@ label {
 
 .fs-20 {
   font-size: 20px !important;
-  line-height: 1.5; }
+  line-height: 1.5; 
+  text-align: left !important;
+  margin-bottom: 1rem;
+  display: block;}
 
 .fs-22 {
   font-size: 22px !important;
@@ -9536,6 +9542,7 @@ label {
   text-align: left;
   position: absolute;
   top: 0;
+  left: 0;
   background-color: #fff;
   transition: all .2s ease;
   z-index: 10; }
@@ -9705,15 +9712,21 @@ label {
   [data-sidebar-style="modern"][data-layout="vertical"] .nav-header .logo-compact {
     display: none; }
 
-.header {
-  height: var(--height);
-  border-bottom: 1px solid #EEEEEE;
-  position: relative;
-  padding: 0rem;
-  background-color: #fff;
-  z-index: 9;
-  padding-left: var(--width);
-  transition: all .2s ease; }
+    .header {
+      width: 100vw; /* Full viewport width */
+      height: var(--height); /* Keeps the height consistent with your variable */
+      border-bottom: 1px solid #EEEEEE;
+      position: fixed; /* Fixes the header at the top of the page */
+      top: 0; /* Aligns it to the top */
+      left: 0; /* Ensures it starts from the left edge of the viewport */
+      background-color: #fff;
+      z-index: 4; /* Ensures it's above other elements */
+      padding: 0rem;
+      padding-left: var(--width); /* Adjust left padding if necessary */
+      transition: all 0.2s ease;
+    }
+    
+
   @media only screen and (max-width: 1400px) {
     .header {
       padding-left: 17rem; } }
@@ -9721,7 +9734,7 @@ label {
     height: 100%;
     padding-left: 5.3125rem;
     padding-right: 2.4rem;
-    align-items: center;
+    align-items:;
     display: flex; }
     @media only screen and (max-width: 767px) {
       .header .header-content {
@@ -9859,7 +9872,9 @@ svg.pulse-svg {
       padding-top: 5rem; } }
 
 [data-header-position="fixed"] .dlabnav {
-  margin-top: 0; }
+  margin-top: 0; 
+  background-color: red;
+}
 
 [data-sidebar-style="compact"][data-header-position="fixed"][data-container="boxed"][data-layout="vertical"] .header {
   width: 1199px; }
@@ -12297,11 +12312,13 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
   height: 100%;
   position: absolute;
   top: 0;
+  left: 0;
   padding-top: var(--height);
   z-index: 3;
   background-color: #fff;
   box-shadow: 0px 0px 10px rgba(120, 130, 140, 0.13);
   transition: all .2s ease; }
+  
   @media only screen and (max-width: 1199px) {
     .dlabnav {
       padding-top: 80px; } }

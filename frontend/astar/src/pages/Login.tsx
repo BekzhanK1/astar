@@ -35,9 +35,8 @@ const SignInPage = () => {
                 <div className="col-xl-6 col-md-6">
                   <div className="sign-in-your py-4 px-2">
                     <h4 className="fs-20">Sign in to your account</h4>
-                    <span>
-                      Welcome back! Login with your data that you entered during
-                      registration
+                    <span className= "fs-20">
+                      Welcome! Login with your data that JUZENG provided you :)
                     </span>
                     <form action="index.html">
                       <div className="text-left">
