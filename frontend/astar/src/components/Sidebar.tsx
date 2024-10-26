@@ -46,8 +46,8 @@ const Sidebar: React.FC = () => {
               onClick={() => toggleSection("analytics")}
               className="has-arrow ai-icon"
             >
-              <i className="flaticon-381-television"></i>
-              <span className="nav-text">Analytics</span>
+              <i className="flaticon-381-heart"></i>
+              <span className="nav-text">Staff</span>
             </a>
             <ul
               className={`collapse ${openSections["analytics"] ? "show" : ""}`}
@@ -57,7 +57,7 @@ const Sidebar: React.FC = () => {
               </li>
               <li>
                 <a href="#">Reports</a>
-              </li>
+          </li>
               <li>
                 <a
                   href="#"
@@ -88,8 +88,8 @@ const Sidebar: React.FC = () => {
               onClick={() => toggleSection("applications")}
               className="has-arrow ai-icon"
             >
-              <i className="flaticon-381-controls-3"></i>
-              <span className="nav-text">Applications</span>
+              <i className="flaticon-381-notepad"></i>
+              <span className="nav-text">Documents</span>
             </a>
             <ul
               className={`collapse ${
@@ -126,9 +126,25 @@ const Sidebar: React.FC = () => {
               <li>
                 <a href="#">E-Commerce</a>
               </li>
+              
             </ul>
           </li>
+          <li>
+            <a
+              href="#"
+              onClick={() => toggleSection("applications")}
+              className="has-arrow ai-icon"
+            >
+              <i className="flaticon-381-television"></i>
+              <span className="nav-text">Lesson Links</span>
+            </a>
+            </li> 
+          
         </ul>
+        <li>
+          <a class="add-menu-sidebar" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#addOrderModalside">+ New Project</a>
+          </li>
+        
       </div>
     </div>
   );

@@ -12404,7 +12404,10 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
       padding: 0.625rem 1.875rem;
       outline-width: 0;
       color: #7e7e7e;
-      text-decoration: none; }
+      text-decoration: none; 
+      text-align: left;
+      margin-top: 1rem;
+    }
       @media only screen and (max-width: 767px) {
         .dlabnav .metismenu a {
           padding: 0.625rem 1.25rem; } }
@@ -12760,7 +12763,9 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 
 [data-sidebar-style="full"][data-layout="vertical"] .menu-toggle .copyright,
 [data-sidebar-style="full"][data-layout="vertical"] .menu-toggle .add-menu-sidebar {
-  display: none !important; }
+  display: none !important; 
+  
+  }
 
 [data-sidebar-style="full"][data-layout="vertical"] .menu-toggle .header {
   padding-left: 6rem;
@@ -12774,7 +12779,11 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
   overflow: visible;
   position: absolute; }
   [data-sidebar-style="full"][data-layout="vertical"] .menu-toggle .dlabnav .nav-text {
-    display: none; }
+    display: block; 
+    text-align: left;
+    margin-top: 100px;
+    
+  }
   [data-sidebar-style="full"][data-layout="vertical"] .menu-toggle .dlabnav .slimScrollDiv,
   [data-sidebar-style="full"][data-layout="vertical"] .menu-toggle .dlabnav .dlabnav-scroll {
     overflow: visible !important; }
@@ -27884,6 +27893,7 @@ span#counter {
   color: #fff;
   margin: 20px 25px 20px;
   display: block;
+  
   /* p{
 		font-size:16px;
 		line-height:1.4;
