@@ -133,3 +133,21 @@ class GroupViewSet(viewsets.ModelViewSet):
             flow=flow,
             curator=curator
         )
+        
+class CreateLessonsAPIView(generics.CreateAPIView):
+    """
+    CreateAPIView for creating lessons.
+    """
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticated, (IsSuperadminUser | IsSupervisorUser | IsCuratorUser)]
+    
+    def perform_create(self, serializer):
+        pass
+        # serializer.save(
+        #     date_time=date_time,
+        #     group=group,
+        #     teacher=teacher,
+        #     lesson_link=lesson_link,
+        #     number_of_students=number_of_students
+        # )
