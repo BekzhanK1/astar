@@ -54,4 +54,7 @@ class Lesson(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='lessons')
     teacher = models.ForeignKey(User,limit_choices_to={'role': 'teacher'}, on_delete=models.CASCADE, related_name='lessons')
     lesson_link = models.URLField(_('lesson link'), max_length=200)
+    number_of_students = models.PositiveIntegerField(_('number of students'), default=0)
     
+    def __str__(self) -> str:
+        return f"Lesson: {self.date_time} | Group: {self.group.code} | Teacher: {self.teacher.email}"
