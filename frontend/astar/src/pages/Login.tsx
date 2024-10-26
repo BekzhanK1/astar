@@ -45,7 +45,7 @@ const SignInPage = () => {
                     <form action="index.html">
                       <div className="text-left">
                         <div className="mb-3">
-                          <label className="mb-1">
+                          <label className="mb-1" >
                             <strong>Email</strong>
                           </label>
                           <input

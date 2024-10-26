@@ -6387,7 +6387,10 @@ textarea.form-control-lg {
   margin-bottom: 0 !important; }
 
 .mb-1 {
-  margin-bottom: 0.25rem !important; }
+  margin-bottom: 0.25rem !important; 
+  text-align: left !important;
+  display: block;
+}
 
 .mb-2 {
   margin-bottom: 0.5rem !important; }
@@ -8712,7 +8715,9 @@ label {
 .img-fix {
   width: 100%;
   height: 100%;
-  object-fit: cover; }
+  object-fit: cover;
+  border-radius: 10px;
+}
 
 .content-body .container {
   margin-top: 40px; }
@@ -20879,7 +20884,10 @@ form.profile-form .form-label {
 } */
 .form-check-label {
   margin-left: 0.3125rem;
-  margin-top: 0.1875rem; }
+  margin-top: 0.1875rem; 
+  display: block;
+  text-align: left !important;
+}
 
 .form-check-inline .form-check-input {
   margin-right: 0.625rem; }
