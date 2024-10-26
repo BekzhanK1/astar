@@ -1,7 +1,4 @@
 import { useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "../vendor/jquery-nice-select/css/nice-select.css";
-import "../css/style.css";
 import image from "../images/login_backgoround.png";
 
 const SignInPage = () => {
