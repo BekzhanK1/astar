@@ -1,12 +1,23 @@
-from django.urls import path
-from .views import AddSupervisorView, AddCuratorView, AddTeacherView, CustomTokenObtainPairView, UserProfileView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import (
+    CustomTokenObtainPairView,
+    GroupViewSet, 
+    UserProfileView, 
+    UserViewSet, 
+    FlowViewSet
+)
 from rest_framework_simplejwt.views import TokenRefreshView
+
+# Set up the router for User and Flow viewsets
+router = DefaultRouter()
+router.register(r'users', UserViewSet, basename='user')
+router.register(r'flows', FlowViewSet, basename='flow')
+router.register(r'groups', GroupViewSet, basename='group')
 
 urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('me/', UserProfileView.as_view(), name='profile'),
-    path('add-supervisor/', AddSupervisorView.as_view(), name='add_supervisor'),
-    path('add-teacher/', AddTeacherView.as_view(), name='add_teacher'),
-    path('add-curator/', AddCuratorView.as_view(), name='add_curator'),
+    path('', include(router.urls)),  # Include all routes from the router
 ]
