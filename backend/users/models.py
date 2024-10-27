@@ -50,9 +50,10 @@ class Group(models.Model):
         return f"Group: {self.code} - {self.level} - {self.flow} | Curator: {self.curator.email}"
     
 class Lesson(models.Model):
-    date_time = models.DateTimeField(_('date and time'))
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='lessons')
     teacher = models.ForeignKey(User,limit_choices_to={'role': 'teacher'}, on_delete=models.CASCADE, related_name='lessons')
+    start_time_date = models.DateTimeField(_('start time date'))
+    end_time_date = models.DateTimeField(_('end time date'))
     lesson_link = models.URLField(_('lesson link'), max_length=200)
     number_of_students = models.PositiveIntegerField(_('number of students'), default=0)
     

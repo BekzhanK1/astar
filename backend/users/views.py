@@ -1,10 +1,13 @@
 from rest_framework import viewsets, mixins, generics
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.views import TokenObtainPairView
 from users.permissions import IsSuperadminUser, IsSupervisorUser, IsCuratorUser
-from .models import Group, User, Flow, ROLE_CHOICES
+from .models import Group, Lesson, User, Flow, ROLE_CHOICES
 from .serializers import CustomTokenObtainPairSerializer, GroupSerializer, UserSerializer, FlowSerializer
+from .utils import parse_lessons_from_text
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -134,20 +137,8 @@ class GroupViewSet(viewsets.ModelViewSet):
             curator=curator
         )
         
-class CreateLessonsAPIView(generics.CreateAPIView):
-    """
-    CreateAPIView for creating lessons.
-    """
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-    permission_classes = [IsAuthenticated, (IsSuperadminUser | IsSupervisorUser | IsCuratorUser)]
-    
-    def perform_create(self, serializer):
-        pass
-        # serializer.save(
-        #     date_time=date_time,
-        #     group=group,
-        #     teacher=teacher,
-        #     lesson_link=lesson_link,
-        #     number_of_students=number_of_students
-        # )
+class CreateLessonsAPIView(APIView):
+    def post(self, request):
+        text = self.request.data.get('text')
+        lessons = parse_lessons_from_text(text)
+        return Response({'message': 'Lessons created successfully'}, status=201)

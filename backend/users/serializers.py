@@ -3,7 +3,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 
 from users.utils import generate_password
-from .models import LEVEL_CHOICES, Flow, Group, User, ROLE_CHOICES
+from .models import LEVEL_CHOICES, Flow, Group, Lesson, User, ROLE_CHOICES
 from rest_framework.exceptions import ValidationError
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -72,6 +72,13 @@ class GroupSerializer(serializers.ModelSerializer):
         Group.objects.create(**self.validated_data)
     class Meta:
         model = Group
+        fields = '__all__'
+        read_only_fields = ('id',)
+        
+        
+class LessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
         fields = '__all__'
         read_only_fields = ('id',)
         
