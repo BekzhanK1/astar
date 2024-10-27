@@ -6,11 +6,19 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.views import TokenObtainPairView
 from users.permissions import IsSuperadminUser, IsSupervisorUser, IsCuratorUser
 from .models import Group, Lesson, User, Flow, ROLE_CHOICES
-from .serializers import CustomTokenObtainPairSerializer, GroupSerializer, UserSerializer, FlowSerializer
+from .serializers import (
+    CustomTokenObtainPairSerializer,
+    GroupSerializer,
+    LessonSerializer,
+    UserSerializer,
+    FlowSerializer,
+)
 from .utils import parse_lessons_from_text
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
 
 class UserProfileView(generics.RetrieveAPIView):
     queryset = User.objects.all()
@@ -25,50 +33,53 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     ModelViewSet for managing users with different roles.
     """
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     def get_permissions(self):
-        if self.action in ['create', 'destroy']:
-            if self.request.data.get('role') == 'supervisor':
+        if self.action in ["create", "destroy"]:
+            if self.request.data.get("role") == "supervisor":
                 self.permission_classes = [IsAuthenticated, IsSuperadminUser]
             else:
-                self.permission_classes = [IsAuthenticated, (IsSuperadminUser | IsSupervisorUser)]
-        elif self.action in ['list', 'retrieve']:
-            self.permission_classes = [IsAuthenticated, (IsSuperadminUser | IsSupervisorUser)]
+                self.permission_classes = [
+                    IsAuthenticated,
+                    (IsSuperadminUser | IsSupervisorUser),
+                ]
+        elif self.action in ["list", "retrieve"]:
+            self.permission_classes = [
+                IsAuthenticated,
+                (IsSuperadminUser | IsSupervisorUser),
+            ]
         return super().get_permissions()
-    
-    
+
     def list(self, request, *args, **kwargs):
         """
         Override the list method to filter users based on role if specified in the query params.
         """
-        role = request.query_params.get('role')
+        role = request.query_params.get("role")
         if role:
             self.queryset = self.queryset.filter(role=role)
         return super().list(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        role = self.request.data.get('role')
-        email = self.request.data.get('email')
-        first_name = self.request.data.get('first_name')
-        last_name = self.request.data.get('last_name')
+        role = self.request.data.get("role")
+        email = self.request.data.get("email")
+        first_name = self.request.data.get("first_name")
+        last_name = self.request.data.get("last_name")
 
         if User.objects.filter(email=email).exists():
-            raise ValidationError('User with this email already exists')
+            raise ValidationError("User with this email already exists")
 
         serializer.save(
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
-            role=role
+            email=email, first_name=first_name, last_name=last_name, role=role
         )
 
     def get_queryset(self):
         """
         Filter queryset based on role if specified in the query params.
         """
-        role = self.request.query_params.get('role')
+        role = self.request.query_params.get("role")
         if role:
             return self.queryset.filter(role=role)
         return self.queryset
@@ -78,67 +89,76 @@ class FlowViewSet(viewsets.ModelViewSet):
     """
     ModelViewSet for managing flows.
     """
+
     queryset = Flow.objects.all()
     serializer_class = FlowSerializer
     permission_classes = [IsAuthenticated, (IsSuperadminUser | IsSupervisorUser)]
 
     def perform_create(self, serializer):
-        number = self.request.data.get('number')
+        number = self.request.data.get("number")
         if not number:
-            raise ValidationError('Number is required')
-        
+            raise ValidationError("Number is required")
+
         if Flow.objects.filter(number=number).exists():
-            raise ValidationError('Flow with this number already exists')
-        
+            raise ValidationError("Flow with this number already exists")
+
         serializer.save(number=number)
 
     def perform_update(self, serializer):
-        number = self.request.data.get('number')
+        number = self.request.data.get("number")
         if not number:
-            raise ValidationError('Number is required')
-        
+            raise ValidationError("Number is required")
+
         if Flow.objects.filter(number=number).exclude(pk=self.get_object().pk).exists():
-            raise ValidationError('Flow with this number already exists')
-        
+            raise ValidationError("Flow with this number already exists")
+
         serializer.save(number=number)
+
 
 class GroupViewSet(viewsets.ModelViewSet):
     """
     ModelViewSet for managing groups.
     """
+
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [IsAuthenticated, (IsSuperadminUser | IsSupervisorUser | IsCuratorUser)]
+    permission_classes = [
+        IsAuthenticated,
+        (IsSuperadminUser | IsSupervisorUser | IsCuratorUser),
+    ]
 
     def perform_create(self, serializer):
-        code = self.request.data.get('code')
-        level = self.request.data.get('level')
-        flow = self.request.data.get('flow')
-        curator = self.request.data.get('curator')
+        code = self.request.data.get("code")
+        level = self.request.data.get("level")
+        flow = self.request.data.get("flow")
+        curator = self.request.data.get("curator")
 
         if Group.objects.filter(code=code, flow=flow, level=level).exists():
-            raise ValidationError('Group with this code already exists')
+            raise ValidationError("Group with this code already exists")
 
         serializer.save(code=code, level=level, flow=flow, curator=curator)
 
     def perform_update(self, serializer):
-        code = self.request.data.get('code')
-        level = self.request.data.get('level')
-        flow = self.request.data.get('flow')
-        curator = self.request.data.get('curator')
+        code = self.request.data.get("code")
+        level = self.request.data.get("level")
+        flow = self.request.data.get("flow")
+        curator = self.request.data.get("curator")
 
         if Group.objects.filter(code=code).exclude(pk=self.get_object().pk).exists():
-            raise ValidationError('Group with this code already exists')
+            raise ValidationError("Group with this code already exists")
 
-        serializer.save(
-            code=code,
-            level=level,
-            flow=flow,
-            curator=curator
-        )
-        
+        serializer.save(code=code, level=level, flow=flow, curator=curator)
+
+
 class CreateLessonsAPIView(APIView):
     def post(self, request):
-        text = self.request.data.get('text')
+        text = self.request.data.get("text")
         lessons = parse_lessons_from_text(text)
-        return Response({'message': 'Lessons created successfully'}, status=201)
+        # many = isinstance(lessons, list)
+        # print(many)
+        # serializer = LessonSerializer(data=lessons)
+        # if serializer.is_valid(raise_exception=True):
+        #     serializer.save(many=many)
+        # else:
+        #     raise ValidationError(serializer.errors)
+        return Response({"message": "Lessons created successfully"}, status=201)
