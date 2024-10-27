@@ -56,6 +56,7 @@ def parse_lessons_from_text(text: str) -> List[LessonData]:
             start_time, end_time, number_of_students
         ))
 
+    print("Parsed lessons:")
     for lesson in lessons:
         print(lesson.lesson_link)
         print(lesson.flow_number)
