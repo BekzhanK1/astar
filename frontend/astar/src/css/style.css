@@ -9540,7 +9540,7 @@ label {
   width: var(--width);
   display: inline-block;
   text-align: left;
-  position: absolute;
+  position: relative;
   top: 0;
   left: 0;
   background-color: #fff;
@@ -9873,7 +9873,7 @@ svg.pulse-svg {
 
 [data-header-position="fixed"] .dlabnav {
   margin-top: 0; 
-  background-color: red;
+  
 }
 
 [data-sidebar-style="compact"][data-header-position="fixed"][data-container="boxed"][data-layout="vertical"] .header {
