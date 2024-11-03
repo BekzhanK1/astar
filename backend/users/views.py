@@ -10,17 +10,17 @@ from users.permissions import (
     IsSupervisorUser,
     IsCuratorUser,
 )
-from .models import Group, Lesson, Meeting, User, Flow, ROLE_CHOICES
+from .models import Group, Lesson, Meeting, User, Flow
 from .serializers import (
     CustomTokenObtainPairSerializer,
     EventSerializer,
     GroupSerializer,
     LessonSerializer,
+    MeetingSerializer,
     UserSerializer,
     FlowSerializer,
 )
 
-# from .utils import parse_lessons_from_text
 from .services import LessonService
 
 
@@ -228,3 +228,17 @@ class LessonViewSet(viewsets.ModelViewSet):
                 {"error": "An unexpected error occurred", "details": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class MeetingViewSet(viewsets.ModelViewSet):
+    serializer_class = MeetingSerializer
+
+    def get_permissions(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            return [IsSuperadminOrSupervisor()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        if self.request.user.role == "teacher":
+            return Meeting.objects.filter(participants=self.request.user)
+        return Meeting.objects.all()

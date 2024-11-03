@@ -5,6 +5,7 @@ from .views import (
     EventAPIView,
     GroupViewSet,
     LessonViewSet,
+    MeetingViewSet,
     UserProfileView,
     UserViewSet,
     FlowViewSet,
@@ -17,6 +18,7 @@ router.register(r"users", UserViewSet, basename="user")
 router.register(r"flows", FlowViewSet, basename="flow")
 router.register(r"groups", GroupViewSet, basename="group")
 router.register(r"lessons", LessonViewSet, basename="lesson")
+router.register(r"meetings", MeetingViewSet, basename="meeting")
 
 urlpatterns = [
     path("token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
