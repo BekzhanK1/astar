@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      - DEBUG=1
+    command: gunicorn --bind 0.0.0.0:8080 astar_backend.wsgi:application
