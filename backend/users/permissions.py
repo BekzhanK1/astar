@@ -1,5 +1,6 @@
 from rest_framework.permissions import BasePermission
 
+
 class IsRoleUser(BasePermission):
     role = None
 
@@ -8,16 +9,22 @@ class IsRoleUser(BasePermission):
 
 
 class IsSuperadminUser(IsRoleUser):
-    role = 'superadmin'
+    role = "superadmin"
 
 
 class IsSupervisorUser(IsRoleUser):
-    role = 'supervisor'
+    role = "supervisor"
 
 
 class IsCuratorUser(IsRoleUser):
-    role = 'curator'
+    role = "curator"
 
 
 class IsTeacherUser(IsRoleUser):
-    role = 'teacher'
+    role = "teacher"
+
+
+class IsSuperadminOrSupervisor(BasePermission):
+    def has_permission(self, request, view):
+        print(request.user.role)
+        return request.user.role in ["superadmin", "supervisor"]
