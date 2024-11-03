@@ -1,19 +1,27 @@
-from rest_framework import viewsets, mixins, generics
+from rest_framework import viewsets, mixins, generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.views import TokenObtainPairView
-from users.permissions import IsSuperadminUser, IsSupervisorUser, IsCuratorUser
-from .models import Group, Lesson, User, Flow, ROLE_CHOICES
+from users.permissions import (
+    IsSuperadminOrSupervisor,
+    IsSuperadminUser,
+    IsSupervisorUser,
+    IsCuratorUser,
+)
+from .models import Group, Lesson, Meeting, User, Flow, ROLE_CHOICES
 from .serializers import (
     CustomTokenObtainPairSerializer,
+    EventSerializer,
     GroupSerializer,
     LessonSerializer,
     UserSerializer,
     FlowSerializer,
 )
-from .utils import parse_lessons_from_text
+
+# from .utils import parse_lessons_from_text
+from .services import LessonService
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -150,15 +158,73 @@ class GroupViewSet(viewsets.ModelViewSet):
         serializer.save(code=code, level=level, flow=flow, curator=curator)
 
 
-class CreateLessonsAPIView(APIView):
-    def post(self, request):
-        text = self.request.data.get("text")
-        lessons = parse_lessons_from_text(text)
-        # many = isinstance(lessons, list)
-        # print(many)
-        # serializer = LessonSerializer(data=lessons)
-        # if serializer.is_valid(raise_exception=True):
-        #     serializer.save(many=many)
-        # else:
-        #     raise ValidationError(serializer.errors)
-        return Response({"message": "Lessons created successfully"}, status=201)
+class EventAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Get all events for the user.
+        """
+        user = request.user
+        if user.role == "teacher":
+            lessons = Lesson.objects.filter(teacher=user)
+            meetings = Meeting.objects.filter(participants=user)
+            events = sorted(
+                list(lessons) + list(meetings), key=lambda event: event.start_time
+            )
+        elif user.role == "curator":
+            events = Lesson.objects.filter(group__curator=user)
+        else:
+            lessons = Lesson.objects.all()
+            meetings = Meeting.objects.all()
+            events = sorted(
+                list(lessons) + list(meetings), key=lambda event: event.start_time
+            )
+
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+
+
+class LessonViewSet(viewsets.ModelViewSet):
+    serializer_class = LessonSerializer
+
+    def get_permissions(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            return [IsSuperadminOrSupervisor()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        if self.request.user.role == "teacher":
+            return Lesson.objects.filter(teacher=self.request.user)
+        return Lesson.objects.all()
+
+    def create(self, request):
+        text = request.data.get("text", "")
+        if not text:
+            return Response(
+                {"error": "No text provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            lessons = LessonService.parse_lessons_from_text(text)
+            LessonService.create_lessons(lessons)
+
+            serializer = LessonSerializer(lessons, many=True)
+            return Response(
+                {"lessons": serializer.data, "message": "Lessons created successfully"},
+                status=status.HTTP_201_CREATED,
+            )
+
+        except ValidationError as e:
+            return Response(
+                {
+                    "error": str(e),
+                    "details": e.message_dict if hasattr(e, "message_dict") else None,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            return Response(
+                {"error": "An unexpected error occurred", "details": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )

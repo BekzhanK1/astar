@@ -3,6 +3,12 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from .managers import CustomUserManager
 
+
+class EventType(models.TextChoices):
+    LESSON = "lesson", _("Lesson")
+    MEETING = "meeting", _("Meeting")
+
+
 ROLE_CHOICES = (
     ("superadmin", "Superadmin"),
     ("supervisor", "Supervisor"),
@@ -55,7 +61,24 @@ class Group(models.Model):
         return f"Group: {self.code} - {self.level} - {self.flow} | Curator: {self.curator.email}"
 
 
-class Lesson(models.Model):
+class Event(models.Model):
+    start_time = models.DateTimeField(_("start time"), blank=True)
+    end_time = models.DateTimeField(_("end time"), blank=True)
+    event_type = models.CharField(
+        max_length=10,
+        choices=EventType.choices,
+        default=EventType.LESSON,
+    )
+    event_link = models.URLField(_("event link"), blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self) -> str:
+        return f"{self.name} | Start: {self.start_time} | End: {self.end_time}"
+
+
+class Lesson(Event):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="lessons")
     teacher = models.ForeignKey(
         User,
@@ -63,14 +86,15 @@ class Lesson(models.Model):
         on_delete=models.CASCADE,
         related_name="lessons",
     )
-    start_time_date = models.DateTimeField(
-        _("start time date"), default=None, blank=True, null=True
-    )
-    end_time_date = models.DateTimeField(
-        _("end time date"), default=None, blank=True, null=True
-    )
-    lesson_link = models.URLField(_("lesson link"), default=None, blank=True, null=True)
     number_of_students = models.PositiveIntegerField(_("number of students"), default=0)
 
     def __str__(self) -> str:
-        return f"Lesson: {self.start_time_date} - {self.end_time_date} | Group: {self.group.code} | Teacher: {self.teacher.email}"
+        return f"Lesson: {self.start_time} - {self.end_time} | Group: {self.group.code} | Teacher: {self.teacher.email}"
+
+
+class Meeting(Event):
+    name = models.TextField(_("name"), blank=False)
+    participants = models.ManyToManyField(User, related_name="meetings")
+
+    def __str__(self) -> str:
+        return f"Meeting: {self.name} | Start: {self.start_time} | End: {self.end_time}"

@@ -3,7 +3,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 
 from users.utils import generate_password
-from .models import LEVEL_CHOICES, Flow, Group, Lesson, User, ROLE_CHOICES
+from .models import LEVEL_CHOICES, Flow, Group, Lesson, Meeting, User, ROLE_CHOICES
 from rest_framework.exceptions import ValidationError
 
 
@@ -94,6 +94,43 @@ class LessonSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ("id",)
 
-    def create(self, validated_data):
-        lesson = Lesson.objects.create(**validated_data)
-        return lesson
+
+class MeetingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Meeting
+        fields = "__all__"
+        read_only_fields = ("id",)
+
+
+class EventSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    event_type = serializers.CharField()
+    start_time = serializers.DateTimeField()
+    end_time = serializers.DateTimeField()
+    event_link = serializers.URLField(allow_null=True, required=False)
+    flow = serializers.CharField(required=False, source="group.flow.number")
+    group = serializers.SerializerMethodField()
+    name = serializers.CharField(required=False)
+    teacher_email = serializers.CharField(required=False, source="teacher.email")
+    teacher_first_name = serializers.CharField(
+        required=False, source="teacher.first_name"
+    )
+    teacher_last_name = serializers.CharField(
+        required=False, source="teacher.last_name"
+    )
+
+    def get_group(self, obj):
+        if isinstance(obj, Lesson):
+            return obj.group.code
+        return None
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop("id")
+        if isinstance(instance, Lesson):
+            representation["event_type"] = "Lesson"
+            representation.pop("name", None)
+        elif isinstance(instance, Meeting):
+            representation["event_type"] = "Meeting"
+            representation.pop("group", None)
+        return representation
