@@ -94,7 +94,18 @@ class Lesson(Event):
 
 class Meeting(Event):
     name = models.TextField(_("name"), blank=False)
-    participants = models.ManyToManyField(User, related_name="meetings")
 
     def __str__(self) -> str:
         return f"Meeting: {self.name} | Start: {self.start_time} | End: {self.end_time}"
+
+
+class MeetingParticipant(models.Model):
+    meeting = models.ForeignKey(
+        Meeting, on_delete=models.CASCADE, related_name="participants"
+    )
+    participant = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="meetings"
+    )
+
+    def __str__(self) -> str:
+        return f"Meeting: {self.meeting.name} | Participant: {self.participant.email}"

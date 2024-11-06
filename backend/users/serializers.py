@@ -38,15 +38,6 @@ class UserSerializer(serializers.ModelSerializer):
             raise ValidationError("Invalid role. Please select a valid role.")
         return value
 
-    def validate(self, data):
-        required_fields = ["email", "first_name", "last_name", "role"]
-        for field in required_fields:
-            if not data.get(field):
-                raise ValidationError(
-                    f"{field.replace('_', ' ').capitalize()} is required."
-                )
-        return data
-
     def create(self, validated_data):
         # password = generate_password()
         password = "qwerty"
@@ -54,6 +45,14 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+    def update(self, instance, validated_data):
+        instance.email = validated_data.get("email", instance.email)
+        instance.first_name = validated_data.get("first_name", instance.first_name)
+        instance.last_name = validated_data.get("last_name", instance.last_name)
+        instance.role = validated_data.get("role", instance.role)
+        instance.save()
+        return instance
 
 
 class FlowSerializer(serializers.ModelSerializer):
