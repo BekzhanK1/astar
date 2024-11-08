@@ -64,6 +64,7 @@ class Event(models.Model):
 
 
 class Lesson(Event):
+    flow = models.ForeignKey(Flow, on_delete=models.CASCADE, related_name="lessons")
     group = models.TextField(_("group"), blank=False)
     teacher = models.ForeignKey(
         User,

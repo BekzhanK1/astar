@@ -11,7 +11,7 @@ class LessonService:
     def parse_lessons_from_text(text: str) -> List[Lesson]:
         lesson_pattern = re.compile(
             r"(https://meet\.google\.com/\S+)\n"  # Lesson link
-            r"(\d+\.\d) ([A-Z]+) ([A-Z]+) ([A-Z]+) ([A-Z0-9-]+)\s*\n"  # Flow number, curator name, level, and group code
+            r"(\d+\.\d) ([A-Z]+) ([A-Z]+) ([A-Z0-9-]+)\s*\n"  # Flow number, curator name, combined group
             r"[^\n]+ ([A-Z]+) ([A-Z]+)\s*\n"  # Teacher name
             r"(\d{2}:\d{2})-(\d{2}:\d{2})\s*\n"  # Start and end times
             r"[^\n]+: (\d+)"  # Number of students
@@ -19,24 +19,24 @@ class LessonService:
         lessons = []
 
         for match in lesson_pattern.finditer(text):
-            (
-                lesson_link,
-                flow_number,
-                curator_first_name,
-                curator_last_name,
-                group_level,
-                group_code,
-                teacher_first_name,
-                teacher_last_name,
-                start_time,
-                end_time,
-                number_of_students,
-            ) = match.groups()
+            try:
+                (
+                    lesson_link,
+                    flow_number,
+                    curator_first_name,
+                    curator_last_name,
+                    group,
+                    teacher_first_name,
+                    teacher_last_name,
+                    start_time,
+                    end_time,
+                    number_of_students,
+                ) = match.groups()
+
+            except ValueError:
+                raise ValidationError("Invalid text format")
 
             flow_number = int(float(flow_number))
-            group_level = (
-                "intermediate" if group_level.upper() == "INTER" else "elementary"
-            )
             today = date.today()
 
             flow = Flow.objects.filter(number=flow_number).first()
@@ -63,27 +63,36 @@ class LessonService:
                     f"Teacher not found. Teacher name: {teacher_first_name} {teacher_last_name}"
                 )
 
-            # group = Group.objects.filter(
-            #     code=group_code, level=group_level, flow=flow, curator=curator
-            # ).first()
-            # if not group:
-            #     raise ValidationError(
-            #         f"Group not found. Group code: {group_code}. Group level: {group_level}. Group curator: {curator_first_name} {curator_last_name}"
-            #     )
+            flow = Flow.objects.filter(number=flow_number).first()
+            if not flow:
+                raise ValidationError(f"Flow not found. Flow number: {flow_number}")
 
-            start_time = datetime.strptime(start_time, "%H:%M").time()
-            end_time = datetime.strptime(end_time, "%H:%M").time()
+            start_time = datetime.combine(
+                today, datetime.strptime(start_time, "%H:%M").time()
+            )
+            end_time = datetime.combine(
+                today, datetime.strptime(end_time, "%H:%M").time()
+            )
+
+            if Lesson.objects.filter(
+                teacher=teacher,
+                start_time__lt=end_time,
+                end_time__gt=start_time,
+            ).exists():
+                raise ValidationError(
+                    f"Teacher {teacher_first_name} {teacher_last_name.capitalize()} already has a lesson at this time"
+                )
 
             lesson = Lesson(
-                group=group_level + " " + group_code,
+                flow=flow,
+                group=group,
                 teacher=teacher,
-                start_time_date=datetime.combine(today, start_time),
-                end_time_date=datetime.combine(today, end_time),
-                lesson_link=lesson_link,
+                start_time=datetime.combine(today, start_time),
+                end_time=datetime.combine(today, end_time),
+                event_link=lesson_link,
                 number_of_students=int(number_of_students),
             )
             lessons.append(lesson)
-
         return lessons
 
     @staticmethod

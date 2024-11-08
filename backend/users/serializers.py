@@ -111,7 +111,7 @@ class EventSerializer(serializers.Serializer):
     end_time = serializers.DateTimeField()
     event_link = serializers.URLField(allow_null=True, required=False)
     flow = serializers.CharField(required=False, source="group.flow.number")
-    group = serializers.CharField()
+    group = serializers.CharField(source="lesson.group", required=False)
     name = serializers.CharField(required=False)
     teacher_email = serializers.CharField(required=False, source="teacher.email")
     teacher_first_name = serializers.CharField(
@@ -123,7 +123,6 @@ class EventSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation.pop("id")
         if isinstance(instance, Lesson):
             representation["event_type"] = "Lesson"
             representation.pop("name", None)

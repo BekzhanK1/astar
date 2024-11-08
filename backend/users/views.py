@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.decorators import action
 from users.permissions import (
     IsSuperadminOrSupervisor,
     IsSuperadminUser,
@@ -106,6 +107,7 @@ class FlowViewSet(viewsets.ModelViewSet):
 
 class EventAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = EventSerializer
 
     def get(self, request):
         """
@@ -159,6 +161,36 @@ class LessonViewSet(viewsets.ModelViewSet):
             return Response(
                 {"lessons": serializer.data, "message": "Lessons created successfully"},
                 status=status.HTTP_201_CREATED,
+            )
+
+        except ValidationError as e:
+            return Response(
+                {
+                    "error": str(e),
+                    "details": e.message_dict if hasattr(e, "message_dict") else None,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            return Response(
+                {"error": "An unexpected error occurred", "details": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    @action(detail=False, methods=["post"])
+    def check_parsing(self, request):
+        text = request.data.get("text", "")
+        if not text:
+            return Response(
+                {"error": "No text provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            lessons = LessonService.parse_lessons_from_text(text)
+            serializer = LessonSerializer(lessons, many=True)
+            return Response(
+                {"lessons": serializer.data, "message": "Lessons parsed successfully"},
+                status=status.HTTP_200_OK,
             )
 
         except ValidationError as e:
