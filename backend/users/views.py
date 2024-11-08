@@ -117,7 +117,7 @@ class EventAPIView(APIView):
         user = request.user
         if user.role == "teacher":
             lessons = Lesson.objects.filter(teacher=user)
-            meetings = Meeting.objects.filter(participants=user)
+            meetings = Meeting.objects.all()
             events = sorted(
                 list(lessons) + list(meetings), key=lambda event: event.start_time
             )
