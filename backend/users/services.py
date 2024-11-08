@@ -87,8 +87,8 @@ class LessonService:
                 flow=flow,
                 group=group,
                 teacher=teacher,
-                start_time=datetime.combine(today, start_time),
-                end_time=datetime.combine(today, end_time),
+                start_time=start_time,
+                end_time=end_time,
                 event_link=lesson_link,
                 number_of_students=int(number_of_students),
             )
