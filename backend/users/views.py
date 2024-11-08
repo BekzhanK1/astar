@@ -147,6 +147,16 @@ class LessonViewSet(viewsets.ModelViewSet):
             return Lesson.objects.filter(teacher=self.request.user)
         return Lesson.objects.all()
 
+    def list(self, request):
+        queryset = self.get_queryset()
+        serializer = LessonOutputSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        lesson = Lesson.objects.get(pk=pk)
+        serializer = LessonOutputSerializer(lesson)
+        return Response(serializer.data)
+
     def create(self, request):
         text = request.data.get("text", "")
         if not text:
