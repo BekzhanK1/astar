@@ -17,8 +17,12 @@ class LessonService:
             r"[^\n]+: (\d+)"  # Number of students
         )
         lessons = []
+        matches = list(lesson_pattern.finditer(text))
 
-        for match in lesson_pattern.finditer(text):
+        if not matches:
+            raise ValidationError("No valid lesson entries found in the input text.")
+
+        for match in matches:
             try:
                 (
                     lesson_link,
@@ -33,27 +37,57 @@ class LessonService:
                     number_of_students,
                 ) = match.groups()
 
-                # Validate all extracted fields
-                if not all(
-                    [
-                        lesson_link,
-                        flow_number,
-                        curator_first_name,
-                        curator_last_name,
-                        group,
-                        teacher_first_name,
-                        teacher_last_name,
-                        start_time,
-                        end_time,
-                        number_of_students,
-                    ]
-                ):
+                # Print all fields for debugging
+                print(f"Lesson Link: {lesson_link}")
+                print(f"Flow Number: {flow_number}")
+                print(f"Curator First Name: {curator_first_name}")
+                print(f"Curator Last Name: {curator_last_name}")
+                print(f"Group: {group}")
+                print(f"Teacher First Name: {teacher_first_name}")
+                print(f"Teacher Last Name: {teacher_last_name}")
+                print(f"Start Time: {start_time}")
+                print(f"End Time: {end_time}")
+                print(f"Number of Students: {number_of_students}")
+
+                # Validate each field explicitly
+                missing_fields = [
+                    field_name
+                    for field_name, value in zip(
+                        [
+                            "lesson_link",
+                            "flow_number",
+                            "curator_first_name",
+                            "curator_last_name",
+                            "group",
+                            "teacher_first_name",
+                            "teacher_last_name",
+                            "start_time",
+                            "end_time",
+                            "number_of_students",
+                        ],
+                        [
+                            lesson_link,
+                            flow_number,
+                            curator_first_name,
+                            curator_last_name,
+                            group,
+                            teacher_first_name,
+                            teacher_last_name,
+                            start_time,
+                            end_time,
+                            number_of_students,
+                        ],
+                    )
+                    if not value
+                ]
+
+                if missing_fields:
                     raise ValueError(
-                        "Missing one or more required fields in the lesson text."
+                        f"Missing required fields: {', '.join(missing_fields)}"
                     )
 
-            except ValueError:
-                raise ValidationError("Invalid text format")
+            except ValueError as e:
+                raise ValidationError(f"Invalid text format: {e}")
 
             flow_number = int(float(flow_number))
             today = date.today()
@@ -82,10 +116,6 @@ class LessonService:
                     f"Teacher not found. Teacher name: {teacher_first_name} {teacher_last_name}"
                 )
 
-            flow = Flow.objects.filter(number=flow_number).first()
-            if not flow:
-                raise ValidationError(f"Flow not found. Flow number: {flow_number}")
-
             start_time = datetime.combine(
                 today, datetime.strptime(start_time, "%H:%M").time()
             )
@@ -112,6 +142,7 @@ class LessonService:
                 number_of_students=int(number_of_students),
             )
             lessons.append(lesson)
+
         return lessons
 
     @staticmethod
