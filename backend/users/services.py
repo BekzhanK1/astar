@@ -132,6 +132,16 @@ class LessonService:
                     f"Teacher {teacher_first_name} {teacher_last_name.capitalize()} already has a lesson at this time"
                 )
 
+            for ls in lessons:
+                if (
+                    ls.teacher == teacher
+                    and ls.start_time < end_time
+                    and ls.end_time > start_time
+                ):
+                    raise ValidationError(
+                        f"Teacher {teacher_first_name} {teacher_last_name.capitalize()} already has a lesson at this time"
+                    )
+
             lesson = Lesson(
                 flow=flow,
                 group=group,
