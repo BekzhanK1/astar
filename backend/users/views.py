@@ -10,11 +10,10 @@ from users.permissions import (
     IsSupervisorUser,
     IsCuratorUser,
 )
-from .models import Group, Lesson, Meeting, User, Flow
+from .models import Lesson, Meeting, User, Flow
 from .serializers import (
     CustomTokenObtainPairSerializer,
     EventSerializer,
-    GroupSerializer,
     LessonSerializer,
     MeetingSerializer,
     UserSerializer,
@@ -68,7 +67,7 @@ class UserViewSet(viewsets.ModelViewSet):
         role = request.query_params.get("role")
         if role:
             self.queryset = self.queryset.filter(role=role)
-        return super().list(request, *args, **kwargs)
+        return Response(self.get_serializer(self.queryset, many=True).data)
 
     def perform_create(self, serializer):
         role = self.request.data.get("role")
@@ -121,41 +120,6 @@ class FlowViewSet(viewsets.ModelViewSet):
             raise ValidationError("Flow with this number already exists")
 
         serializer.save(number=number)
-
-
-class GroupViewSet(viewsets.ModelViewSet):
-    """
-    ModelViewSet for managing groups.
-    """
-
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-    permission_classes = [
-        IsAuthenticated,
-        (IsSuperadminUser | IsSupervisorUser | IsCuratorUser),
-    ]
-
-    def perform_create(self, serializer):
-        code = self.request.data.get("code")
-        level = self.request.data.get("level")
-        flow = self.request.data.get("flow")
-        curator = self.request.data.get("curator")
-
-        if Group.objects.filter(code=code, flow=flow, level=level).exists():
-            raise ValidationError("Group with this code already exists")
-
-        serializer.save(code=code, level=level, flow=flow, curator=curator)
-
-    def perform_update(self, serializer):
-        code = self.request.data.get("code")
-        level = self.request.data.get("level")
-        flow = self.request.data.get("flow")
-        curator = self.request.data.get("curator")
-
-        if Group.objects.filter(code=code).exclude(pk=self.get_object().pk).exists():
-            raise ValidationError("Group with this code already exists")
-
-        serializer.save(code=code, level=level, flow=flow, curator=curator)
 
 
 class EventAPIView(APIView):

@@ -46,21 +46,6 @@ class Flow(models.Model):
         return f"Flow: {self.number} (Started: {self.start_date})"
 
 
-class Group(models.Model):
-    code = models.CharField(_("code"), max_length=30, unique=True)
-    level = models.CharField(_("level"), choices=LEVEL_CHOICES, max_length=30)
-    flow = models.ForeignKey(Flow, on_delete=models.CASCADE, related_name="groups")
-    curator = models.ForeignKey(
-        User,
-        limit_choices_to={"role": "curator"},
-        on_delete=models.CASCADE,
-        related_name="curated_groups",
-    )
-
-    def __str__(self):
-        return f"Group: {self.code} - {self.level} - {self.flow} | Curator: {self.curator.email}"
-
-
 class Event(models.Model):
     start_time = models.DateTimeField(_("start time"), blank=True)
     end_time = models.DateTimeField(_("end time"), blank=True)
@@ -79,7 +64,7 @@ class Event(models.Model):
 
 
 class Lesson(Event):
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="lessons")
+    group = models.TextField(_("group"), blank=False)
     teacher = models.ForeignKey(
         User,
         limit_choices_to={"role": "teacher"},
@@ -89,7 +74,7 @@ class Lesson(Event):
     number_of_students = models.PositiveIntegerField(_("number of students"), default=0)
 
     def __str__(self) -> str:
-        return f"Lesson: {self.start_time} - {self.end_time} | Group: {self.group.code} | Teacher: {self.teacher.email}"
+        return f"Lesson: {self.start_time} - {self.end_time} | Group: {self.group} | Teacher: {self.teacher.email}"
 
 
 class Meeting(Event):

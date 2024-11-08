@@ -3,7 +3,6 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     CustomTokenObtainPairView,
     EventAPIView,
-    GroupViewSet,
     LessonViewSet,
     MeetingViewSet,
     UserProfileView,
@@ -16,7 +15,6 @@ from rest_framework_simplejwt.views import TokenRefreshView
 router = DefaultRouter()
 router.register(r"users", UserViewSet, basename="user")
 router.register(r"flows", FlowViewSet, basename="flow")
-router.register(r"groups", GroupViewSet, basename="group")
 router.register(r"lessons", LessonViewSet, basename="lesson")
 router.register(r"meetings", MeetingViewSet, basename="meeting")
 

@@ -3,7 +3,7 @@ import re
 from datetime import datetime, date
 from typing import List
 from django.core.exceptions import ValidationError
-from .models import Lesson, Group, User, Flow
+from .models import Lesson, User, Flow
 
 
 class LessonService:
@@ -63,19 +63,19 @@ class LessonService:
                     f"Teacher not found. Teacher name: {teacher_first_name} {teacher_last_name}"
                 )
 
-            group = Group.objects.filter(
-                code=group_code, level=group_level, flow=flow, curator=curator
-            ).first()
-            if not group:
-                raise ValidationError(
-                    f"Group not found. Group code: {group_code}. Group level: {group_level}. Group curator: {curator_first_name} {curator_last_name}"
-                )
+            # group = Group.objects.filter(
+            #     code=group_code, level=group_level, flow=flow, curator=curator
+            # ).first()
+            # if not group:
+            #     raise ValidationError(
+            #         f"Group not found. Group code: {group_code}. Group level: {group_level}. Group curator: {curator_first_name} {curator_last_name}"
+            #     )
 
             start_time = datetime.strptime(start_time, "%H:%M").time()
             end_time = datetime.strptime(end_time, "%H:%M").time()
 
             lesson = Lesson(
-                group=group,
+                group=group_level + " " + group_code,
                 teacher=teacher,
                 start_time_date=datetime.combine(today, start_time),
                 end_time_date=datetime.combine(today, end_time),

@@ -4,7 +4,7 @@ import re
 import string
 from typing import List, NamedTuple
 
-from users.models import Flow, Group, Lesson, User
+from users.models import Flow, Lesson, User
 
 
 def generate_password() -> str:
