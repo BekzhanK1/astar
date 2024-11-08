@@ -33,6 +33,25 @@ class LessonService:
                     number_of_students,
                 ) = match.groups()
 
+                # Validate all extracted fields
+                if not all(
+                    [
+                        lesson_link,
+                        flow_number,
+                        curator_first_name,
+                        curator_last_name,
+                        group,
+                        teacher_first_name,
+                        teacher_last_name,
+                        start_time,
+                        end_time,
+                        number_of_students,
+                    ]
+                ):
+                    raise ValueError(
+                        "Missing one or more required fields in the lesson text."
+                    )
+
             except ValueError:
                 raise ValidationError("Invalid text format")
 
