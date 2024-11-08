@@ -153,3 +153,6 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.User"
+
+TIME_ZONE = "Asia/Almaty"
+USE_TZ = True
