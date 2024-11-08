@@ -228,6 +228,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def get_queryset(self):
+        # TODO: Implement permissions for meetings
         if self.request.user.role == "teacher":
-            return Meeting.objects.filter(participants=self.request.user)
+            return Meeting.objects.all()
         return Meeting.objects.all()
