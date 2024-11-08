@@ -135,6 +135,7 @@ class EventSerializer(serializers.Serializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         if isinstance(instance, Lesson):
+            representation["group"] = instance.group
             representation["event_type"] = "Lesson"
             representation.pop("name", None)
         elif isinstance(instance, Meeting):
