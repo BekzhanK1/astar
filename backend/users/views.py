@@ -15,6 +15,7 @@ from .models import Lesson, Meeting, User, Flow
 from .serializers import (
     CustomTokenObtainPairSerializer,
     EventSerializer,
+    LessonOutputSerializer,
     LessonSerializer,
     MeetingSerializer,
     UserSerializer,
@@ -157,7 +158,7 @@ class LessonViewSet(viewsets.ModelViewSet):
             lessons = LessonService.parse_lessons_from_text(text)
             LessonService.create_lessons(lessons)
 
-            serializer = LessonSerializer(lessons, many=True)
+            serializer = LessonOutputSerializer(lessons, many=True)
             return Response(
                 {"lessons": serializer.data, "message": "Lessons created successfully"},
                 status=status.HTTP_201_CREATED,
@@ -187,7 +188,7 @@ class LessonViewSet(viewsets.ModelViewSet):
 
         try:
             lessons = LessonService.parse_lessons_from_text(text)
-            serializer = LessonSerializer(lessons, many=True)
+            serializer = LessonOutputSerializer(lessons, many=True)
             return Response(
                 {"lessons": serializer.data, "message": "Lessons parsed successfully"},
                 status=status.HTTP_200_OK,

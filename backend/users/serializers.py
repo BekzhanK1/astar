@@ -97,6 +97,17 @@ class LessonSerializer(serializers.ModelSerializer):
         read_only_fields = ("id",)
 
 
+class LessonOutputSerializer(serializers.ModelSerializer):
+    teacher_first_name = serializers.CharField(source="teacher.first_name")
+    teacher_last_name = serializers.CharField(source="teacher.last_name")
+    teacher_email = serializers.CharField(source="teacher.email")
+    flow_number = serializers.IntegerField(source="flow.number")
+
+    class Meta:
+        model = Lesson
+        fields = "__all__"
+
+
 class MeetingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meeting
