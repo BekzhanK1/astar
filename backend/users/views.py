@@ -60,15 +60,6 @@ class UserViewSet(viewsets.ModelViewSet):
             ]
         return super().get_permissions()
 
-    def list(self, request, *args, **kwargs):
-        """
-        Override the list method to filter users based on role if specified in the query params.
-        """
-        role = request.query_params.get("role")
-        if role:
-            self.queryset = self.queryset.filter(role=role)
-        return Response(self.get_serializer(self.queryset, many=True).data)
-
     def perform_create(self, serializer):
         role = self.request.data.get("role")
         email = self.request.data.get("email")
@@ -81,15 +72,6 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.save(
             email=email, first_name=first_name, last_name=last_name, role=role
         )
-
-    def get_queryset(self):
-        """
-        Filter queryset based on role if specified in the query params.
-        """
-        role = self.request.query_params.get("role")
-        if role:
-            return self.queryset.filter(role=role)
-        return self.queryset
 
 
 class FlowViewSet(viewsets.ModelViewSet):
