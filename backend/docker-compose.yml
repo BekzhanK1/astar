@@ -9,5 +9,3 @@ services:
       - ./db.sqlite3:/app/db.sqlite3
     environment:
       - DEBUG=1
-    command: >
-      sh -c "python manage.py makemigrations && python manage.py migrate && gunicorn --bind 0.0.0.0:8080 astar_backend.wsgi:application"

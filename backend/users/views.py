@@ -1,3 +1,4 @@
+import datetime
 from rest_framework import viewsets, mixins, generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -22,6 +23,7 @@ from .serializers import (
     FlowSerializer,
 )
 
+from dateutil.parser import parse
 from .services import LessonService
 
 
@@ -61,6 +63,14 @@ class UserViewSet(viewsets.ModelViewSet):
                 (IsSuperadminUser | IsSupervisorUser),
             ]
         return super().get_permissions()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        role = request.query_params.get("role")
+        if role:
+            queryset = queryset.filter(role=role)
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         role = self.request.data.get("role")
@@ -157,7 +167,45 @@ class LessonViewSet(viewsets.ModelViewSet):
         serializer = LessonOutputSerializer(lesson)
         return Response(serializer.data)
 
-    def create(self, request):
+    def perform_create(self, serializer):
+        print(self.request.data)
+        flow = self.request.data.get("flow")
+        group = self.request.data.get("group")
+        teacher = self.request.data.get("teacher")
+        start_time = self.request.data.get("start_time")
+        end_time = self.request.data.get("end_time")
+        number_of_students = self.request.data.get("number_of_students")
+
+        try:
+            start_time = parse(start_time)
+            end_time = parse(end_time)
+        except ValueError:
+            raise ValidationError(
+                "Invalid date format. Ensure it follows ISO 8601 format."
+            )
+
+        if Lesson.objects.filter(
+            teacher=teacher,
+            start_time__lt=end_time,  # Start time of existing lesson is before the new lesson ends
+            end_time__gt=start_time,
+        ).exists():
+            raise ValidationError(
+                "This teacher already has a lesson scheduled during this time."
+            )
+
+        if Lesson.objects.filter(
+            group=group,
+            teacher=teacher,
+            start_time=start_time,
+            end_time=end_time,
+            flow=flow,
+        ).exists():
+            raise ValidationError("Lesson with this data already exists.")
+
+        serializer.save()
+
+    @action(detail=False, methods=["post"])
+    def parse_lessons(self, request):
         text = request.data.get("text", "")
         if not text:
             return Response(
@@ -226,6 +274,34 @@ class MeetingViewSet(viewsets.ModelViewSet):
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsSuperadminOrSupervisor()]
         return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        print(self.request.data)
+        start_time = self.request.data.get("start_time")
+        end_time = self.request.data.get("end_time")
+        name = self.request.data.get("name")
+        try:
+            start_time = parse(start_time)
+            end_time = parse(end_time)
+        except ValueError:
+            raise ValidationError(
+                "Invalid date format. Ensure it follows ISO 8601 format."
+            )
+
+        if Meeting.objects.filter(
+            start_time__lt=end_time,  # Start time of existing meeting is before the new meeting ends
+            end_time__gt=start_time,
+        ).exists():
+            raise ValidationError("This meeting overlaps with another meeting.")
+
+        if Meeting.objects.filter(
+            name=name,
+            start_time=start_time,
+            end_time=end_time,
+        ).exists():
+            raise ValidationError("Meeting with this data already exists.")
+
+        serializer.save()
 
     def get_queryset(self):
         # TODO: Implement permissions for meetings
