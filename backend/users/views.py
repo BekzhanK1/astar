@@ -276,6 +276,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def create(self, request):
+        print(request.data)
         users = request.data.get("participants")
         if not users or not isinstance(users, list):
             raise ValidationError("A list of user IDs is required for 'participants'.")
