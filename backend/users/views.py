@@ -275,21 +275,34 @@ class MeetingViewSet(viewsets.ModelViewSet):
             return [IsSuperadminOrSupervisor()]
         return [IsAuthenticated()]
 
-    def perform_create(self, serializer):
-        print(self.request.data)
-        start_time = self.request.data.get("start_time")
-        end_time = self.request.data.get("end_time")
-        name = self.request.data.get("name")
+    def create(self, request):
+        users = request.data.get("participants")
+        if not users or not isinstance(users, list):
+            raise ValidationError("A list of user IDs is required for 'participants'.")
+
+        participants = User.objects.filter(pk__in=users)
+        if len(participants) != len(users):
+            invalid_ids = set(users) - set(participants.values_list("id", flat=True))
+            raise ValidationError(f"Invalid participant IDs: {invalid_ids}")
+
+        name = request.data.get("name")
+        start_time = request.data.get("start_time")
+        end_time = request.data.get("end_time")
+
+        if not name or not start_time or not end_time:
+            raise ValidationError("Name, start_time, and end_time are required.")
+
         try:
             start_time = parse(start_time)
             end_time = parse(end_time)
         except ValueError:
-            raise ValidationError(
-                "Invalid date format. Ensure it follows ISO 8601 format."
-            )
+            raise ValidationError("Invalid date format. Use ISO 8601 format.")
+
+        if end_time <= start_time:
+            raise ValidationError("End time must be later than start time.")
 
         if Meeting.objects.filter(
-            start_time__lt=end_time,  # Start time of existing meeting is before the new meeting ends
+            start_time__lt=end_time,
             end_time__gt=start_time,
         ).exists():
             raise ValidationError("This meeting overlaps with another meeting.")
@@ -299,12 +312,25 @@ class MeetingViewSet(viewsets.ModelViewSet):
             start_time=start_time,
             end_time=end_time,
         ).exists():
-            raise ValidationError("Meeting with this data already exists.")
+            raise ValidationError(
+                "A meeting with the same name, start_time, and end_time already exists."
+            )
 
-        serializer.save()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        meeting = serializer.save()
+
+        meeting.participants.set(participants)
+        meeting.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         # TODO: Implement permissions for meetings
-        if self.request.user.role == "teacher":
+        if (
+            self.request.user.role == "superadmin"
+            or self.request.user.role == "supervisor"
+        ):
             return Meeting.objects.all()
-        return Meeting.objects.all()
+        user = self.request.user
+        return Meeting.objects.filter(participants=user)

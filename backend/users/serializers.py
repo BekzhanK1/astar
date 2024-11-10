@@ -109,10 +109,16 @@ class LessonOutputSerializer(serializers.ModelSerializer):
 
 
 class MeetingSerializer(serializers.ModelSerializer):
+    participants = UserSerializer(many=True, read_only=True)
+
     class Meta:
         model = Meeting
         fields = "__all__"
-        read_only_fields = ("id",)
+        read_only_fields = ("id", "participants")
+
+    def create(self, validated_data):
+        meeting = Meeting.objects.create(**validated_data, event_type="Meeting")
+        return meeting
 
 
 class EventSerializer(serializers.Serializer):
